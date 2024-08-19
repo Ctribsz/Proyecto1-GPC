@@ -9,6 +9,9 @@ mod constants;
 mod map;
 mod texture;
 
+use rodio::{Decoder, OutputStream, Sink};
+use std::fs::File;
+use std::io::BufReader;
 use texture::Texture;
 use map::render_mini_map;
 use controller::process_events;
@@ -36,6 +39,7 @@ fn main() {
 
     let mut player = Player::new(player_pos, player_angle, player_fov);
 
+
     let mut window = Window::new(
         "Rust Graphics - Maze Example",
         framebuffer_width,
@@ -47,7 +51,6 @@ fn main() {
 
     // Cargar la textura
     let wall_texture = Texture::from_file("assets/texture.png");
-
     let mode = "3D";  
 
     while window.is_open() && !window.is_key_down(Key::Escape) {
@@ -82,4 +85,5 @@ fn main() {
 
         std::thread::sleep(std::time::Duration::from_millis(16));
     }
+    // Cierra el sink y espera que termine
 }
