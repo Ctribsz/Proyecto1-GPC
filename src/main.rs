@@ -6,7 +6,12 @@ mod help_metods;
 mod render;  // Añadimos este nuevo módulo
 mod controller;
 mod constants;
+mod map;
+mod texture;
 
+use std::time::{Instant, Duration};
+use texture::Texture;
+use map::render_mini_map;
 use controller::process_events;
 use help_metods::{find_player_position, convert_maze_to_chars};
 use framebuffer::{Framebuffer, Color};
@@ -20,7 +25,6 @@ fn main() {
 
     let mut maze = maze::Maze::new(WIDTH, HEIGHT);
     maze.generate();
-    let maze_chars = convert_maze_to_chars(&maze.render());
 
     let framebuffer_width = (WIDTH * 3 + 1) * BLOCK_SIZE;
     let framebuffer_height = (HEIGHT * 2 + 1) * BLOCK_SIZE;
@@ -42,33 +46,59 @@ fn main() {
         panic!("{}", e);
     });
 
-    let mut mode = "3D";  // Modo inicial
+    // Cargar la textura
+    let wall_texture = Texture::from_file("assets/texture.png");
+
+    let mode = "3D";
+    
+    let mut last_time = Instant::now();
+    let mut frame_count = 0;
 
     while window.is_open() && !window.is_key_down(Key::Escape) {
-        // Procesa eventos de teclado y mueve al jugador si es necesario
         process_events(&window, &mut player, &maze, BLOCK_SIZE);
 
-        // Limpiar el framebuffer antes de dibujar
-        framebuffer.clear(Color::new(255, 255, 255));
+        framebuffer.clear(Color::new(255, 255, 255)); // Limpiar el framebuffer
 
-        // Renderizar el mapa en 2D o 3D según el modo
         if mode == "2D" {
             render2d(&mut framebuffer, &player, &maze, BLOCK_SIZE);
         } else {
             let maze_chars = convert_maze_to_chars(&maze.render());
-            render3d(&mut framebuffer, &player, &maze_chars, BLOCK_SIZE);
+            render3d(&mut framebuffer, &player, &maze_chars, BLOCK_SIZE, &wall_texture);
         }
 
-        // Actualizar la ventana con el contenido del framebuffer
+        // Dibujar el mini mapa en la esquina superior izquierda
+        render_mini_map(
+            &mut framebuffer,
+            &convert_maze_to_chars(&maze.render()),
+            BLOCK_SIZE,
+            0.25,         // Escala del 25% del tamaño original
+            10,           // Desplazamiento X desde la esquina
+            10,           // Desplazamiento Y desde la esquina
+        );
+
+        // Update FPS
+        let current_time = Instant::now();
+        let elapsed = current_time.duration_since(last_time);
+
+        // Actualiza cada segundo el conteo de frames
+        if elapsed >= Duration::new(1, 0) {
+            let fps = frame_count;
+            frame_count = 0;
+            last_time = current_time;
+            println!("FPS: {}", fps); // Aquí podrías renderizar el texto en la pantalla
+        }
+
+
         let buffer: Vec<u32> = framebuffer
             .get_buffer()
             .iter()
             .map(|color| color.to_u32())
             .collect();
 
-        window.update_with_buffer(&buffer, framebuffer.width(), framebuffer.height()).unwrap();
+            window.set_title(&format!("Rust Graphics - FPS: {}", fps));
 
-        // Añadir una pequeña pausa para evitar el parpadeo
+        window.update_with_buffer(&buffer, framebuffer.width(), framebuffer.height()).unwrap();
+        frame_count += 1;
         std::thread::sleep(std::time::Duration::from_millis(16));
     }
 }

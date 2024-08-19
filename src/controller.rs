@@ -1,6 +1,5 @@
 use crate::player::Player;
 use crate::help_metods::convert_maze_to_chars;
-use crate::maze::Maze;
 use minifb::{Key, Window};
 
 
