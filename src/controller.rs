@@ -1,12 +1,14 @@
 use crate::player::Player;
 use crate::help_metods::convert_maze_to_chars;
+use crate::maze::Maze;
 use minifb::{Key, Window};
 
-pub fn process_events(window: &Window, player: &mut Player, maze: &Vec<String>, block_size: usize) {
+
+pub fn process_events(window: &Window, player: &mut Player, maze: &crate::maze::Maze, block_size: usize) {
     const MOVE_SPEED: f32 = 0.05;
     const ROTATION_SPEED: f32 = std::f32::consts::PI / 10.0;
 
-    let maze_grid = convert_maze_to_chars(maze);
+    let maze_grid = convert_maze_to_chars(&maze.render());
 
     if window.is_key_down(Key::Left) {
         player.a -= ROTATION_SPEED;
@@ -49,11 +51,3 @@ pub fn process_events(window: &Window, player: &mut Player, maze: &Vec<String>, 
         }
     }
 }
-
-
-
-
-
-
-
-

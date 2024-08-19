@@ -45,26 +45,30 @@ fn main() {
     let mut mode = "3D";  // Modo inicial
 
     while window.is_open() && !window.is_key_down(Key::Escape) {
-        if window.is_key_down(Key::M) {
-            mode = if mode == "2D" { "3D" } else { "2D" };
-        }
+        // Procesa eventos de teclado y mueve al jugador si es necesario
+        process_events(&window, &mut player, &maze, BLOCK_SIZE);
 
-        process_events(&window, &mut player, &maze.render(), BLOCK_SIZE); // Pasar el laberinto como Vec<String>
+        // Limpiar el framebuffer antes de dibujar
+        framebuffer.clear(Color::new(255, 255, 255));
 
-        framebuffer.clear(Color::new(255, 255, 255)); // Limpia el framebuffer
-
+        // Renderizar el mapa en 2D o 3D según el modo
         if mode == "2D" {
             render2d(&mut framebuffer, &player, &maze, BLOCK_SIZE);
         } else {
+            let maze_chars = convert_maze_to_chars(&maze.render());
             render3d(&mut framebuffer, &player, &maze_chars, BLOCK_SIZE);
         }
 
+        // Actualizar la ventana con el contenido del framebuffer
         let buffer: Vec<u32> = framebuffer
             .get_buffer()
             .iter()
             .map(|color| color.to_u32())
             .collect();
 
-        window.update_with_buffer(&buffer, framebuffer_width, framebuffer_height).unwrap();
+        window.update_with_buffer(&buffer, framebuffer.width(), framebuffer.height()).unwrap();
+
+        // Añadir una pequeña pausa para evitar el parpadeo
+        std::thread::sleep(std::time::Duration::from_millis(16));
     }
 }

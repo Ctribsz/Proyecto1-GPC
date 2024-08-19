@@ -17,7 +17,7 @@ pub fn cast_rays(
 
     for i in 0..ray_count {
         let ray_angle = player.a - (player.fov / 2.0) + (i as f32 * angle_step);
-        let intersection = cast_single_ray(framebuffer, maze, player, block_size, ray_angle, false);
+        let _intersection = cast_single_ray(framebuffer, maze, player, block_size, ray_angle, false);
     }
 }
 
